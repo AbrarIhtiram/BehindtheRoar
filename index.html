@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Behind the Roar</title>
+
+<!-- Tailwind CDN (for production you should compile Tailwind) -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- PDF.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.141/pdf.min.js"></script>
+<script>
+  // After loading PDF.js
+  const pdfjsLib = window['pdfjs-dist/build/pdf'];
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.10.141/pdf.worker.min.js';
+</script>
+
+<style>
+:root {
+  --navy:#0b2545;
+  --paper:#f9f7f3;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Georgia, serif;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== BOOK FLIP ===== */
+.flip-container { perspective: 1600px; }
+.flipper { position: relative; transform-style: preserve-3d; transition: transform 0.8s ease; }
+.flipper.flipped { transform: rotateY(180deg); }
+.page { backface-visibility: hidden; }
+.page.back { position: absolute; inset: 0; transform: rotateY(180deg); }
+
+/* ===== ZOOM ===== */
+.zoom { transition: transform 0.3s ease; }
+.zoom:hover { transform: scale(1.05); }
+
+/* ===== ARCHIVE AUTO-CAROUSEL ===== */
+.archive-wrapper { overflow: hidden; }
+.archive-track { display: flex; gap: 1.5rem; width: max-content; animation: archiveScroll 40s linear infinite; }
+@keyframes archiveScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ===== FOOTER ===== */
+footer { margin-top: auto; }
+</style>
+</head>
+
+<body>
+
+<header class="bg-[var(--navy)] text-white py-10 text-center">
+  <h1 class="text-5xl font-bold">Behind the Roar</h1>
+  <p class="italic opacity-90 mt-2">Stories, Spotlights, and School Life</p>
+</header>
+
+<nav class="bg-white border-b sticky top-0 z-20">
+  <div class="max-w-6xl mx-auto flex justify-center gap-8 py-4 text-sm uppercase">
+    <a href="#latest">Latest</a>
+    <a href="#archive">Archive</a>
+    <a href="#teachers">Teachers</a>
+    <a href="#highschool">High School</a>
+    <a href="#middleschool">Middle School</a>
+  </div>
+</nav>
+
+<main class="max-w-6xl mx-auto px-6 py-14 flex-1">
+
+<section id="latest">
+  <h2 class="text-4xl font-bold mb-8">October 2025 Edition</h2>
+  <div class="grid md:grid-cols-3 gap-10">
+    <div id="teachers" class="cursor-pointer"
+      onclick="openModal('October 2025','Teachers','assets/oct-2025-teachers.pdf')">
+      <div class="bg-white shadow-xl rounded p-6 text-center font-semibold">Teachers</div>
+    </div>
+    <div id="highschool" class="cursor-pointer"
+      onclick="openModal('October 2025','High School','assets/oct-2025-highschool.pdf')">
+      <div class="bg-white shadow-xl rounded p-6 text-center font-semibold">High School</div>
+    </div>
+    <div id="middleschool" class="cursor-pointer"
+      onclick="openModal('October 2025','Middle School','assets/oct-2025-middleschool.pdf')">
+      <div class="bg-white shadow-xl rounded p-6 text-center font-semibold">Middle School</div>
+    </div>
+  </div>
+</section>
+
+<section id="archive" class="mt-24">
+  <h2 class="text-3xl font-bold mb-6">Past Editions</h2>
+  <div class="archive-wrapper">
+    <div class="archive-track">
+      <div class="bg-white shadow p-6 min-w-[260px]"><h3 class="font-bold">August 2025</h3><p class="italic text-sm">Welcome Back</p></div>
+      <div class="bg-white shadow p-6 min-w-[260px]"><h3 class="font-bold">September 2025</h3><p class="italic text-sm">Fall Kickoff</p></div>
+      <div class="bg-white shadow p-6 min-w-[260px]"><h3 class="font-bold">October 2025</h3><p class="italic text-sm">Harvest Highlights</p></div>
+      <div class="bg-white shadow p-6 min-w-[260px]"><h3 class="font-bold">November 2025</h3><p class="italic text-sm">Gratitude Edition</p></div>
+      <div class="bg-white shadow p-6 min-w-[260px]"><h3 class="font-bold">December 2025</h3><p class="italic text-sm">Year's Close</p></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+  <div class="bg-white max-w-5xl w-full mx-6 grid md:grid-cols-3 rounded overflow-hidden">
+    <div class="md:col-span-2 p-4 relative flip-container">
+      <div id="flipper" class="flipper">
+        <canvas id="frontPage" class="page rounded max-h-[80vh] w-full mx-auto"></canvas>
+        <canvas id="backPage" class="page back rounded max-h-[80vh] w-full mx-auto"></canvas>
+      </div>
+      <button onclick="flipPage()" id="flipArrow"
+        class="absolute right-4 top-1/2 -translate-y-1/2 bg-white shadow-lg rounded-full w-12 h-12 flex items-center justify-center text-2xl transition hover:translate-x-1">→</button>
+    </div>
+    <div class="p-6 flex flex-col">
+      <h3 id="modalEdition" class="text-2xl font-bold"></h3>
+      <p id="modalSection" class="italic mb-4"></p>
+      <p class="text-sm leading-relaxed mb-6">
+        This section of <strong>Behind the Roar</strong> highlights stories,
+        achievements, and announcements curated for this group.
+      </p>
+      <button onclick="closeModal()" class="mt-auto bg-black text-white py-3 text-sm w-full">Close Newsletter</button>
+    </div>
+  </div>
+</div>
+
+<footer class="bg-[var(--navy)] text-white text-center py-8">
+© 2025 Behind the Roar
+</footer>
+
+<script>
+const modal = document.getElementById("modal");
+const flipper = document.getElementById("flipper");
+const frontCanvas = document.getElementById("frontPage");
+const backCanvas = document.getElementById("backPage");
+const modalEdition = document.getElementById("modalEdition");
+const modalSection = document.getElementById("modalSection");
+const flipArrow = document.getElementById("flipArrow");
+
+let isFront = true;
+let pdfDoc = null;
+let startX = 0;
+
+async function renderPage(canvas, pdf, pageNum) {
+  const page = await pdf.getPage(pageNum);
+  const viewport = page.getViewport({ scale: 1.5 });
+  const scale = Math.min((window.innerWidth * 0.5) / viewport.width, 1.5);
+  const scaledViewport = page.getViewport({ scale });
+  canvas.width = scaledViewport.width;
+  canvas.height = scaledViewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport: scaledViewport }).promise;
+}
+
+async function openModal(edition, section, pdfUrl) {
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  modalEdition.textContent = edition;
+  modalSection.textContent = section;
+  isFront = true;
+  flipArrow.textContent = "→";
+
+  pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise; // works now
+  await renderPage(frontCanvas, pdfDoc, 1);
+  if (pdfDoc.numPages > 1) await renderPage(backCanvas, pdfDoc, 2);
+  else backCanvas.getContext('2d').clearRect(0,0,backCanvas.width,backCanvas.height);
+  flipper.classList.remove("flipped");
+}
+
+function flipPage() {
+  flipper.classList.toggle("flipped");
+  isFront = !isFront;
+  flipArrow.textContent = isFront ? "→" : "←";
+}
+
+function closeModal() {
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+  frontCanvas.getContext('2d').clearRect(0,0,frontCanvas.width,frontCanvas.height);
+  backCanvas.getContext('2d').clearRect(0,0,backCanvas.width,backCanvas.height);
+}
+
+flipper.addEventListener("touchstart", e => { startX = e.touches[0].clientX; });
+flipper.addEventListener("touchend", e => {
+  const endX = e.changedTouches[0].clientX;
+  if (Math.abs(endX - startX) > 50) flipPage();
+});
+</script>
+
+</body>
+</html>
