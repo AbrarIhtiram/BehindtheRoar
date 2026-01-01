@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Behind the Roar</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+:root {
+  --navy:#0b2545;
+  --paper:#f9f7f3;
+}
+
+/* Base */
+body {
+  font-family: Georgia, serif;
+  background: var(--paper);
+}
+
+/* Book Flip */
+.flip-container {
+  perspective: 1600px;
+}
+.flipper {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s ease;
+}
+.flipper.flipped {
+  transform: rotateY(180deg);
+}
+.page {
+  backface-visibility: hidden;
+}
+.page.back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+  box-shadow: -10px 0 30px rgba(0,0,0,0.3);
+}
+
+/* Zoom on hover for thumbnails */
+.zoom {
+  transition: transform 0.3s ease;
+}
+.zoom:hover {
+  transform: scale(1.05);
+}
+
+/* Archive Scroll */
+.archive-wrapper {
+  overflow: hidden;
+  margin-top: 4rem; /* moved closer to bottom */
+}
+.archive-track {
+  display: flex;
+  gap: 1.5rem;
+  width: max-content;
+  animation: archiveScroll 40s linear infinite;
+}
+@keyframes archiveScroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Separator line */
+.separator {
+  border-top: 1px solid #d1d5db; /* gray-300 */
+  margin: 1.5rem auto;
+  width: 50rem;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="bg-[var(--navy)] text-white py-10 text-center">
+  <h1 class="text-5xl font-bold">Behind the Roar</h1>
+  <p class="italic opacity-90 mt-2">Stories, Spotlights, and School Life</p>
+</header>
+
+<!-- NAV -->
+<nav class="bg-white border-b sticky top-0 z-20">
+  <div class="max-w-6xl mx-auto flex justify-center gap-8 py-4 text-sm uppercase">
+    <a href="#latest">Latest</a>
+    <a href="#archive">Archive</a>
+    <a href="#teachers">Teachers</a>
+    <a href="#highschool">High School</a>
+    <a href="#middleschool">Middle School</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="max-w-6xl mx-auto px-6 py-14 flex-1">
+
+<!-- LATEST -->
+<section id="latest">
+  <h2 class="text-4xl font-bold mb-4 text-center">October 2025 Edition</h2>
+  <div class="separator"></div>
+  <div class="grid md:grid-cols-3 gap-10 mt-8">
+
+    <!-- TEACHERS -->
+    <div class="cursor-pointer text-center" onclick="openModal(
+      'October 2025', 'Teachers',
+      'assets/oct-2025-teachers-1.png',
+      'assets/oct-2025-teachers-2.png')">
+      <p class="font-semibold mb-3">Teachers</p>
+      <img src="assets/oct-2025-teachers-1.png" class="shadow-xl rounded zoom">
+    </div>
+
+    <!-- HIGH SCHOOL -->
+    <div class="cursor-pointer text-center" onclick="openModal(
+      'October 2025', 'High School',
+      'assets/oct-2025-highschool-1.png',
+      'assets/oct-2025-highschool-2.png')">
+      <p class="font-semibold mb-3">High School</p>
+      <img src="assets/oct-2025-highschool-1.png" class="shadow-xl rounded zoom">
+    </div>
+
+    <!-- MIDDLE SCHOOL -->
+    <div class="cursor-pointer text-center" onclick="openModal(
+      'October 2025', 'Middle School',
+      'assets/oct-2025-middleschool-1.png',
+      'assets/oct-2025-middleschool-2.png')">
+      <p class="font-semibold mb-3">Middle School</p>
+      <img src="assets/oct-2025-middleschool-1.png" class="shadow-xl rounded zoom">
+    </div>
+
+  </div>
+</section>
+
+<!-- ARCHIVE -->
+<section id="archive" class="mt-32">
+  <h2 class="text-3xl font-bold mb-4 text-center">Past Editions</h2>
+  <div class="separator"></div>
+  <div class="archive-wrapper mt-8">
+    <div class="archive-track">
+      <div class="bg-white shadow p-6 min-w-[260px] rounded"><h3 class="font-bold">August 2025</h3><p class="italic text-sm">Welcome Back</p></div>
+      <div class="bg-white shadow p-6 min-w-[260px] rounded"><h3 class="font-bold">September 2025</h3><p class="italic text-sm">Fall Kickoff</p></div>
+      <div class="bg-white shadow p-6 min-w-[260px] rounded"><h3 class="font-bold">October 2025</h3><p class="italic text-sm">Harvest Highlights</p></div>
+      <div class="bg-white shadow p-6 min-w-[260px] rounded"><h3 class="font-bold">November 2025</h3><p class="italic text-sm">Gratitude Edition</p></div>
+      <div class="bg-white shadow p-6 min-w-[260px] rounded"><h3 class="font-bold">December 2025</h3><p class="italic text-sm">Year's Close</p></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- MODAL -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+  <div class="bg-white max-w-6xl w-full mx-6 rounded overflow-hidden grid md:grid-cols-3 shadow-2xl">
+
+    <!-- FLIP IMAGE AREA -->
+    <div class="md:col-span-2 p-4 relative flip-container bg-gray-100 rounded-lg shadow-inner">
+      <div id="flipper" class="flipper">
+        <img id="frontPage" class="page rounded max-h-[90vh] mx-auto shadow-lg">
+        <img id="backPage" class="page back rounded max-h-[90vh] mx-auto shadow-lg">
+      </div>
+
+      <!-- FLIP BUTTON -->
+      <button onclick="flipPage()" id="flipArrow"
+        class="absolute right-4 top-1/2 -translate-y-1/2
+               bg-white shadow-lg rounded-full w-14 h-14
+               flex items-center justify-center text-3xl transition hover:translate-x-1">
+        →
+      </button>
+    </div>
+
+    <!-- DETAILS AREA -->
+    <div class="p-8 flex flex-col bg-[var(--navy)] text-white rounded-r-lg shadow-lg">
+      <h3 id="modalEdition" class="text-3xl font-bold mb-2"></h3>
+      <p id="modalSection" class="italic mb-4 text-lg"></p>
+      <p class="text-md leading-relaxed mb-6">
+        This section of <strong>Behind the Roar</strong> highlights stories, achievements, and announcements curated specifically for this group.
+      </p>
+      <ul class="mb-6 list-disc list-inside text-md space-y-2">
+        <li>Exclusive interviews</li>
+        <li>Spotlight on achievements</li>
+        <li>Event highlights</li>
+        <li>Important announcements</li>
+      </ul>
+      <button onclick="closeModal()"
+        class="mt-auto bg-white text-[var(--navy)] py-3 text-lg font-semibold w-full rounded hover:bg-gray-200 transition">
+        Close Newsletter
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<footer class="bg-[var(--navy)] text-white text-center py-8 mt-20">
+© 2025 Behind the Roar
+</footer>
+
+<script>
+const modal = document.getElementById("modal");
+const flipper = document.getElementById("flipper");
+const frontPage = document.getElementById("frontPage");
+const backPage = document.getElementById("backPage");
+const modalEdition = document.getElementById("modalEdition");
+const modalSection = document.getElementById("modalSection");
+const flipArrow = document.getElementById("flipArrow");
+
+let isFront = true;
+let startX = 0;
+
+function openModal(edition, section, front, back) {
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+  modalEdition.textContent = edition;
+  modalSection.textContent = section;
+  frontPage.src = front;
+  backPage.src = back;
+  flipper.classList.remove("flipped");
+  flipArrow.textContent = "→";
+  isFront = true;
+}
+
+function flipPage() {
+  flipper.classList.toggle("flipped");
+  isFront = !isFront;
+  flipArrow.textContent = isFront ? "→" : "←";
+}
+
+function closeModal() {
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+
+/* SWIPE FOR MOBILE */
+flipper.addEventListener("touchstart", e => { startX = e.touches[0].clientX; });
+flipper.addEventListener("touchend", e => {
+  const endX = e.changedTouches[0].clientX;
+  if (Math.abs(endX - startX) > 50) flipPage();
+});
+</script>
+</body>
+</html>
